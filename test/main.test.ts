@@ -1,7 +1,7 @@
 import "@matterlabs/hardhat-zksync-node/dist/type-extensions";
 import { expect } from "chai";
 import * as hre from "hardhat";
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 import * as zks from "zksync-web3";
 import { deployFactory, deployMultisig, fundAccount, MultiSigWallet, signMultiSigTx } from "./utils";
 
