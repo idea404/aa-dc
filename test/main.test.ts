@@ -57,7 +57,6 @@ describe("Account Abstraction Tests", function () {
 
       it("Should have a balance", async function () {
         const result = await accountContract.provider.getBalance(accountContract.address);
-        // Convert BigNumber to a primitive number for comparison
         const balance = parseFloat(ethers.utils.formatEther(result));
         expect(balance).to.be.greaterThan(99.99);
       });
