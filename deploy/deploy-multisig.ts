@@ -1,14 +1,19 @@
 import { utils, Wallet, Provider, EIP712Signer, types } from "zksync-web3";
 import * as ethers from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const KEY = process.env.PRIVATE_KEY as string;
 
 // Put the address of your AA factory
-const AA_FACTORY_ADDRESS = "<FACTORY-ADDRESS>";
+const AA_FACTORY_ADDRESS = "0xb3AE0580Fff458E48Eb97EcDaD7Bbe825b78F410";
 
 export default async function (hre: HardhatRuntimeEnvironment) {
   const provider = new Provider("https://testnet.era.zksync.dev");
   // Private key of the account used to deploy
-  const wallet = new Wallet("<WALLET-PRIVATE-KEY>").connect(provider);
+  const wallet = new Wallet(KEY).connect(provider);
   const factoryArtifact = await hre.artifacts.readArtifact("AAFactory");
 
   const aaFactory = new ethers.Contract(
