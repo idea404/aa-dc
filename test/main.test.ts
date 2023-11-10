@@ -11,10 +11,6 @@ const config = {
 };
 
 describe("Account Abstraction Tests", function () {
-  let accountContractName: string;
-  let accountContract: zks.Contract;
-  let factoryContractName: string;
-  let factoryContract: zks.Contract;
   let provider: zks.Provider;
   let firstRichWallet: zks.Wallet;
   let result: any;
@@ -25,8 +21,9 @@ describe("Account Abstraction Tests", function () {
   });
 
   describe("MultiSig Account Abstraction Tests", function () {
-    accountContractName = "TwoUserMultisig";
-    factoryContractName = "AAFactory";
+    const accountContractName = "TwoUserMultisig";
+    const factoryContractName = "AAFactory";
+    let factoryContract: ethers.Contract;
     describe("MultiSig Account Factory", function () {
       before(async function () {
         factoryContract = await deployFactory(firstRichWallet, accountContractName, factoryContractName);
@@ -39,9 +36,10 @@ describe("Account Abstraction Tests", function () {
     });
 
     describe("MultiSig Account", async function () {
+      let accountContract: ethers.Contract;
+      let multiSigWallet: MultiSigWallet;
       let ownerWallet1: zks.Wallet;
       let ownerWallet2: zks.Wallet;
-      let multiSigWallet: MultiSigWallet;
       before(async function () {
         ownerWallet1 = zks.Wallet.createRandom();
         ownerWallet2 = zks.Wallet.createRandom();
@@ -80,6 +78,22 @@ describe("Account Abstraction Tests", function () {
         // expect to be slightly higher than 5
         expect(difference / BigInt(10 ** 18) > 9.9).to.be.true;
         expect(difference / BigInt(10 ** 18) < 10.1).to.be.true;
+      });
+    });
+  });
+
+  describe("Pension Account Abstraction Tests", function () {
+    const accountContractName = "PensionAccount";
+    const factoryContractName = "PensionAccountFactory";
+    let factoryContract: ethers.Contract;
+    describe("Pension Account Factory", function () {
+      before(async function () {
+        factoryContract = await deployFactory(firstRichWallet, accountContractName, factoryContractName);
+      });
+
+      it("Should have a tx hash that starts from 0x", async function () {
+        result = factoryContract.deployTransaction.hash;
+        expect(result).to.contains("0x");
       });
     });
   });
