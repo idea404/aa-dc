@@ -24,7 +24,7 @@ describe("Account Abstraction Tests", function () {
     firstRichWallet = new zks.Wallet(config.firstWalletPrivateKey, provider);
   });
 
-  describe("Old Example Account Abstraction Tests", function () {
+  describe("MultiSig Account Abstraction Tests", function () {
     accountContractName = "TwoUserMultisig";
     factoryContractName = "AAFactory";
     describe("MultiSig Account Factory", function () {
