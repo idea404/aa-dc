@@ -25,6 +25,10 @@ contract PensionAccount is IAccount {
     // Expiry timestamp
     uint256 public expiryTimestamp;
 
+    // State variables to track investments
+    uint256 public totalEthReceived;
+    mapping(address => uint256) public investmentPerToken;
+
     // Event for swap action
     event Swap(address indexed token, uint256 amountToSwap);
 
@@ -48,12 +52,29 @@ contract PensionAccount is IAccount {
 
     receive() external payable {
         uint256 amountToSwap = msg.value / 4;
+        totalEthReceived += msg.value; // Track total ETH received
+
+        // Update investment for each token
+        investmentPerToken[DOGE] += amountToSwap;
+        investmentPerToken[PEPE] += amountToSwap;
+        investmentPerToken[SHIB] += amountToSwap;
+        investmentPerToken[BTC] += amountToSwap;
+
+        // Emit Swap events (optional, can be removed if events are not supported)
         emit Swap(DOGE, amountToSwap);
         emit Swap(PEPE, amountToSwap);
         emit Swap(SHIB, amountToSwap);
         emit Swap(BTC, amountToSwap);
     }
 
+    // View function to get investment details
+    function getInvestmentDetails() external view returns (uint256 ethReceived, uint256 dogeInvestment, uint256 pepeInvestment, uint256 shibInvestment, uint256 btcInvestment) {
+        ethReceived = totalEthReceived;
+        dogeInvestment = investmentPerToken[DOGE];
+        pepeInvestment = investmentPerToken[PEPE];
+        shibInvestment = investmentPerToken[SHIB];
+        btcInvestment = investmentPerToken[BTC];
+    }
 
     // Override the executeTransaction function to include the time lock
     function executeTransaction(

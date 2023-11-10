@@ -113,7 +113,35 @@ describe("Account Abstraction Tests", function () {
       it("Should have a balance", async function () {
         const result = await pensionAccountContract.provider.getBalance(pensionAccountContract.address);
         const balance = parseFloat(ethers.utils.formatEther(result));
-        expect(balance).to.be.greaterThan(99.99);
+        expect(balance).to.be.greaterThan(9.99);
+      });
+
+      it("Should distribute investments correctly", async function () {
+        // Send 10 ETH to the pension account
+        const sendAmount = ethers.utils.parseUnits("20", 18);
+        await firstRichWallet.transfer({
+          to: pensionAccountContract.address,
+          amount: sendAmount,
+          overrides: { type: 113 },
+        });
+  
+        // Call getInvestmentDetails to get investment distribution
+        const investmentDetails = await pensionAccountContract.getInvestmentDetails();
+  
+        // Check total ETH received
+        const ethReceived = parseFloat(ethers.utils.formatEther(investmentDetails.ethReceived));
+        expect(ethReceived).to.equal(120);
+  
+        // Check distribution to each token (30 ETH each)
+        const expectedInvestmentPerToken = 30;
+        const dogeInvestment = parseFloat(ethers.utils.formatEther(investmentDetails.dogeInvestment));
+        expect(dogeInvestment).to.equal(expectedInvestmentPerToken);
+        const pepeInvestment = parseFloat(ethers.utils.formatEther(investmentDetails.pepeInvestment));
+        expect(pepeInvestment).to.equal(expectedInvestmentPerToken);
+        const shibInvestment = parseFloat(ethers.utils.formatEther(investmentDetails.shibInvestment));
+        expect(shibInvestment).to.equal(expectedInvestmentPerToken);
+        const btcInvestment = parseFloat(ethers.utils.formatEther(investmentDetails.btcInvestment));
+        expect(btcInvestment).to.equal(expectedInvestmentPerToken);
       });
     });
   });

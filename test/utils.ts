@@ -43,6 +43,8 @@ export async function deployMultisig(wallet: Wallet, factoryAddress: string, own
 
 export async function deployPension(wallet: Wallet, factoryAddress: string, walletOwner: Wallet) {
   const paFactoryArtifact = await hre.artifacts.readArtifact("PensionAccountFactory");
+  const accountArtifact = await hre.artifacts.readArtifact("PensionAccount");
+  
   const paFactory = new ethers.Contract(factoryAddress, paFactoryArtifact.abi, wallet);
 
   // Contract constructor args
@@ -61,14 +63,14 @@ export async function deployPension(wallet: Wallet, factoryAddress: string, wall
 
   // Getting the address of the deployed contract account
   const abiCoder = new ethers.utils.AbiCoder();
-  let multisigAddress = utils.create2Address(
+  let contractAddress = utils.create2Address(
     factoryAddress,
     await paFactory.pensionAccountBytecodeHash(),
     salt,
     abiCoder.encode(["address", "address", "address", "address", "address", "address"], [walletOwner.address, dex, doge, pepe, shib, btc])
   );
 
-  const pensionAccountContract = new ethers.Contract(multisigAddress, paFactoryArtifact.abi, wallet);
+  const pensionAccountContract = new ethers.Contract(contractAddress, accountArtifact.abi, wallet);
   return pensionAccountContract;
 }
 
