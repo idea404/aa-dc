@@ -47,7 +47,6 @@ describe("Account Abstraction Tests", function () {
         ownerWallet2 = zks.Wallet.createRandom();
         accountContract = await deployMultisig(firstRichWallet, factoryContract.address, ownerWallet1, ownerWallet2);
         await fundAccount(firstRichWallet, accountContract.address);
-        // await signMultiSigTx(firstRichWallet, accountContract.address, factoryContract.address, ownerWallet1, ownerWallet2);
       });
 
       it("Should have a tx hash that starts from 0x", async function () {

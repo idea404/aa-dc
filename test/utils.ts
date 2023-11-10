@@ -41,55 +41,6 @@ export async function deployMultisig(wallet: Wallet, factoryAddress: string, own
   return accountContract;
 }
 
-export async function signMultiSigTx(wallet: Wallet, multiSigAddress: string, factoryAddress: string, owner1: Wallet, owner2: Wallet) {
-  const factoryArtifact = await hre.artifacts.readArtifact("AAFactory");
-  const aaFactory = new ethers.Contract(factoryAddress, factoryArtifact.abi, wallet);
-  const provider = wallet.provider;
-  const salt = ethers.constants.HashZero;
-    // Transaction to deploy a new account using the multisig we just deployed
-    let aaTx = await aaFactory.populateTransaction.deployAccount(
-      salt,
-      // These are accounts that will own the newly deployed account
-      Wallet.createRandom().address,
-      Wallet.createRandom().address
-    );
-  
-    const gasLimit = await provider.estimateGas(aaTx);
-    const gasPrice = await provider.getGasPrice();
-  
-    aaTx = {
-      ...aaTx,
-      // deploy a new account using the multisig
-      from: multiSigAddress,
-      gasLimit: gasLimit,
-      gasPrice: gasPrice,
-      chainId: (await provider.getNetwork()).chainId,
-      nonce: await provider.getTransactionCount(multiSigAddress),
-      type: 113,
-      customData: {
-        gasPerPubdata: utils.DEFAULT_GAS_PER_PUBDATA_LIMIT,
-      } as types.Eip712Meta,
-      value: ethers.BigNumber.from(0),
-    };
-    const signedTxHash = EIP712Signer.getSignedDigest(aaTx);
-  
-    const signature = ethers.utils.concat([
-      // Note, that `signMessage` wouldn't work here, since we don't want
-      // the signed hash to be prefixed with `\x19Ethereum Signed Message:\n`
-      ethers.utils.joinSignature(owner1._signingKey().signDigest(signedTxHash)),
-      ethers.utils.joinSignature(owner2._signingKey().signDigest(signedTxHash)),
-    ]);
-  
-    aaTx.customData = {
-      ...aaTx.customData,
-      customSignature: signature,
-    };
-  
-    const sentTx = await provider.sendTransaction(utils.serialize(aaTx));
-    await sentTx.wait();  
-    return sentTx;
-}
-
 export async function deployAccount(wallet: Wallet, factoryAddress: string, accountOwnerPublicKey: string) {
   const paFactoryArtifact = await hre.artifacts.readArtifact("PensionAccountFactory");
   const paFactory = new ethers.Contract(factoryAddress, paFactoryArtifact.abi, wallet);
