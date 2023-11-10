@@ -3,7 +3,7 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 import { ethers } from "ethers";
 import * as zks from "zksync-web3";
-import { deployFactory, deployMultisig, fundAccount, MultiSigWallet, signMultiSigTx } from "./utils";
+import { deployFactory, deployMultisig, fundAccount, MultiSigWallet } from "./utils";
 
 const config = {
   firstWalletPrivateKey: "0x7726827caac94a7f9e1b160f7ea819f172f7b6f9d2a97f992c38edeab82d4110",
