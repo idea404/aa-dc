@@ -41,34 +41,31 @@ export async function deployMultisig(wallet: Wallet, factoryAddress: string, own
   return accountContract;
 }
 
-export async function deployAccount(wallet: Wallet, factoryAddress: string, accountOwnerPublicKey: string) {
+export async function deployPension(wallet: Wallet, factoryAddress: string, walletOwner: Wallet) {
   const paFactoryArtifact = await hre.artifacts.readArtifact("PensionAccountFactory");
   const paFactory = new ethers.Contract(factoryAddress, paFactoryArtifact.abi, wallet);
 
-  // Account owner address
-  const owner = ethers.utils.getAddress(accountOwnerPublicKey);
-
   // Contract constructor args
-  const dex = "0x123dex";
-  const doge = "0x123doge";
-  const pepe = "0x123pepe";
-  const shib = "0x123shib";
-  const btc = "0x123btc";
+  const dex = createMockAddress("decentralizedex"); // "0xdex0000000000000000000000000000000000000"
+  const doge = createMockAddress("dogecoin"); // "0xdoge000000000000000000000000000000000000"
+  const pepe = createMockAddress("pepecoin"); // "0xpepe000000000000000000000000000000000000"
+  const shib = createMockAddress("shibainucoin"); // "0xshib0000000000000000000000000000000000000"
+  const btc = createMockAddress("bitcoin"); // "0xbtc00000000000000000000000000000000000000"
 
   // For the simplicity of the tutorial, we will use zero hash as salt
   const salt = ethers.constants.HashZero;
 
   // deploy account with dex and token addresses
-  const tx = await paFactory.deployAccount(salt, owner, dex, doge, pepe, shib, btc, { gasLimit: 10000000 });
+  const tx = await paFactory.deployPensionAccount(salt, walletOwner.address, dex, doge, pepe, shib, btc, { gasLimit: 10000000 });
   await tx.wait();
 
   // Getting the address of the deployed contract account
   const abiCoder = new ethers.utils.AbiCoder();
   let multisigAddress = utils.create2Address(
     factoryAddress,
-    await paFactory.aaBytecodeHash(),
+    await paFactory.pensionAccountBytecodeHash(),
     salt,
-    abiCoder.encode(["owner", "dex", "doge", "pepe", "shib", "btc"], [owner, dex, doge, pepe, shib, btc])
+    abiCoder.encode(["address", "address", "address", "address", "address", "address"], [walletOwner.address, dex, doge, pepe, shib, btc])
   );
 
   const pensionAccountContract = new ethers.Contract(multisigAddress, paFactoryArtifact.abi, wallet);
@@ -117,4 +114,10 @@ export class MultiSigWallet extends Wallet {
     transaction.customData.customSignature = sig1 + sig2.substring(2);
     return (0, utils.serialize)(transaction);
   }
+}
+
+function createMockAddress(base: string) {
+  const baseHex = base.replace(/[^0-9A-Fa-f]/g, ''); // Remove non-hex characters
+  const paddingLength = 40 - baseHex.length; // Calculate padding length
+  return '0x' + baseHex + '0'.repeat(paddingLength);
 }

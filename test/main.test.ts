@@ -3,7 +3,7 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 import { ethers } from "ethers";
 import * as zks from "zksync-web3";
-import { deployFactory, deployMultisig, fundAccount, MultiSigWallet } from "./utils";
+import { deployFactory, deployMultisig, fundAccount, MultiSigWallet, deployPension } from "./utils";
 
 const config = {
   firstWalletPrivateKey: "0x7726827caac94a7f9e1b160f7ea819f172f7b6f9d2a97f992c38edeab82d4110",
@@ -94,6 +94,26 @@ describe("Account Abstraction Tests", function () {
       it("Should have a tx hash that starts from 0x", async function () {
         result = factoryContract.deployTransaction.hash;
         expect(result).to.contains("0x");
+      });
+    });
+
+    describe("Pension Account", function () {
+      const ownerWallet = zks.Wallet.createRandom();
+      let pensionAccountContract: ethers.Contract;
+      before(async function () {
+        pensionAccountContract = await deployPension(firstRichWallet, factoryContract.address, ownerWallet);
+        await fundAccount(firstRichWallet, pensionAccountContract.address);
+      });
+
+      it("Should have a tx hash that starts from 0x", async function () {
+        result = factoryContract.deployTransaction.hash;
+        expect(result).to.contains("0x");
+      });
+
+      it("Should have a balance", async function () {
+        const result = await pensionAccountContract.provider.getBalance(pensionAccountContract.address);
+        const balance = parseFloat(ethers.utils.formatEther(result));
+        expect(balance).to.be.greaterThan(99.99);
       });
     });
   });
