@@ -27,7 +27,7 @@ describe("Account Abstraction Tests", function () {
   describe("Old Example Account Abstraction Tests", function () {
     accountContractName = "TwoUserMultisig";
     factoryContractName = "AAFactory";
-    describe("OldAccountFactory", function () {
+    describe("MultiSig Account Factory", function () {
       before(async function () {
         factoryContract = await deployFactory(firstRichWallet, accountContractName, factoryContractName);
       });
@@ -38,7 +38,7 @@ describe("Account Abstraction Tests", function () {
       });
     });
 
-    describe("OldAccount", async function () {
+    describe("MultiSig Account", async function () {
       let ownerWallet1: zks.Wallet;
       let ownerWallet2: zks.Wallet;
       let multiSigWallet: MultiSigWallet;
