@@ -1,23 +1,23 @@
 import { utils, Wallet, Provider, EIP712Signer, types } from "zksync-web3";
 import * as ethers from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import dotenv from "dotenv";
+import { config, getDeployedContractDetailsFromVars, saveContractToVars } from "./utils";
 
-dotenv.config();
-
-const KEY = process.env.PRIVATE_KEY as string;
-
-// Put the address of your AA factory
-const AA_FACTORY_ADDRESS = "0xb3AE0580Fff458E48Eb97EcDaD7Bbe825b78F410";
+const KEY = config.firstWalletPrivateKey;
 
 export default async function (hre: HardhatRuntimeEnvironment) {
-  const provider = new Provider("https://testnet.era.zksync.dev");
+  // Put the address of your AA factory
+  const factoryAddress = getDeployedContractDetailsFromVars(
+    hre.network.name,
+    "AAFactory"
+  ).address;
+  const provider = new Provider(hre.network.config.url);
   // Private key of the account used to deploy
   const wallet = new Wallet(KEY).connect(provider);
   const factoryArtifact = await hre.artifacts.readArtifact("AAFactory");
 
   const aaFactory = new ethers.Contract(
-    AA_FACTORY_ADDRESS,
+    factoryAddress,
     factoryArtifact.abi,
     wallet
   );
@@ -40,12 +40,13 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   // Getting the address of the deployed contract account
   const abiCoder = new ethers.utils.AbiCoder();
   const multisigAddress = utils.create2Address(
-    AA_FACTORY_ADDRESS,
+    factoryAddress,
     await aaFactory.aaBytecodeHash(),
     salt,
     abiCoder.encode(["address", "address"], [owner1.address, owner2.address])
   );
   console.log(`Multisig account deployed on address ${multisigAddress}`);
+  saveContractToVars(hre.network.name, "TwoUserMultisig", aaFactory.address);
 
   console.log("Sending funds to multisig account");
   // Send funds to the multisig account we just deployed
