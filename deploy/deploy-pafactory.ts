@@ -1,32 +1,31 @@
 import { utils, Wallet } from "zksync-web3";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
-import dotenv from "dotenv";
+import { config, saveContractToVars } from "./utils";
 
-dotenv.config();
-
-const KEY = process.env.PRIVATE_KEY as string;
+const KEY = config.firstWalletPrivateKey;
 
 export default async function (hre: HardhatRuntimeEnvironment) {
   // Private key of the account used to deploy
   const wallet = new Wallet(KEY);
   const deployer = new Deployer(hre, wallet);
-  const factoryArtifact = await deployer.loadArtifact("AAFactory");
-  const aaArtifact = await deployer.loadArtifact("TwoUserMultisig");
+  const pensionAccountFactoryArtifact = await deployer.loadArtifact("PensionAccountFactory");
+  const paArtifact = await deployer.loadArtifact("PensionAccount");
 
   // Getting the bytecodeHash of the account
-  const bytecodeHash = utils.hashBytecode(aaArtifact.bytecode);
+  const bytecodeHash = utils.hashBytecode(paArtifact.bytecode);
 
   const factory = await deployer.deploy(
-    factoryArtifact,
+    pensionAccountFactoryArtifact,
     [bytecodeHash],
     undefined,
     [
       // Since the factory requires the code of the multisig to be available,
       // we should pass it here as well.
-      aaArtifact.bytecode,
+      paArtifact.bytecode,
     ]
   );
 
-  console.log(`AA factory address: ${factory.address}`);
+  console.log(`Pension Account factory address: ${factory.address}`);
+  saveContractToVars(hre.network.name, "PensionAccountFactory", factory.address);
 }
