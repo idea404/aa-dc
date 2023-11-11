@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "test": "hardhat test --network hardhat",
+    "deploy:shared-account-with-restrictions": "hardhat deploy-zksync --script deploy-shared-account-with-restrictions.ts --network zkSyncLocalnet",
     "deploy:aafactory": "hardhat deploy-zksync --script deploy-aafactory.ts --network zkSyncLocalnet",
     "deploy:multisig": "hardhat deploy-zksync --script deploy-multisig.ts --network zkSyncLocalnet",
     "deploy:pafactory": "hardhat deploy-zksync --script deploy-pafactory.ts --network zkSyncLocalnet",
