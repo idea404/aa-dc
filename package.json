@@ -6,7 +6,8 @@
   "scripts": {
     "test": "hardhat test --network hardhat",
     "deploy:factory": "hardhat deploy-zksync --script deploy-factory.ts --network zkSyncTestnet",
-    "deploy:multisig": "hardhat deploy-zksync --script deploy-multisig.ts --network zkSyncTestnet"
+    "deploy:multisig": "hardhat deploy-zksync --script deploy-multisig.ts --network zkSyncTestnet",
+    "deploy:shared-account-with-restrictions": "hardhat deploy-zksync --script deploy-shared-account-with-restrictions.ts --network zkSyncTestnet"
   },
   "devDependencies": {
     "@types/chai": "^4.3.10",

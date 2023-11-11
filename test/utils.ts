@@ -2,6 +2,7 @@ import { utils, Wallet, Provider, types, EIP712Signer } from "zksync-web3";
 import * as hre from "hardhat";
 import { ethers } from "ethers";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
+import { expect } from "chai";
 
 export async function deployFactory(wallet: Wallet, accountContractName: string, accountFactoryContractName: string) {
   const deployer = new Deployer(hre, wallet);
@@ -116,6 +117,27 @@ export class MultiSigWallet extends Wallet {
     transaction.customData.customSignature = sig1 + sig2.substring(2);
     return (0, utils.serialize)(transaction);
   }
+}
+
+export async function expectThrowsAsync(
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  method: Function,
+  errorMessage: string
+): Promise<string> {
+  let error = null;
+  try {
+    await method();
+  } catch (err) {
+    error = err;
+  }
+
+  expect(error).to.be.an("Error");
+  if (errorMessage) {
+    expect((error as unknown as Error).message).to.include(errorMessage);
+    return (error as unknown as Error).message;
+  }
+
+  return "";
 }
 
 function createMockAddress(base: string) {
