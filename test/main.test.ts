@@ -3,7 +3,7 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 import { ethers } from "ethers";
 import * as zks from "zksync-web3";
-import { deployFactory, deployMultisig, fundAccount, MultiSigWallet, deployPension } from "./utils";
+import { deployFactory, deployMultisig, fundAccount, MultiSigWallet, deployPension, PensionWallet } from "./utils";
 
 const config = {
   firstWalletPrivateKey: "0x7726827caac94a7f9e1b160f7ea819f172f7b6f9d2a97f992c38edeab82d4110",
@@ -142,6 +142,31 @@ describe("Account Abstraction Tests", function () {
         expect(shibInvestment).to.equal(expectedInvestmentPerToken);
         const btcInvestment = parseFloat(ethers.utils.formatEther(investmentDetails.btcInvestment));
         expect(btcInvestment).to.equal(expectedInvestmentPerToken);
+      });
+
+      it("Should not be able to withdraw before the lockup period", async function () {
+        const pensionWallet = new PensionWallet(
+          pensionAccountContract.address, 
+          ownerWallet.privateKey, 
+          provider
+        );
+        const balanceBefore = (await provider.getBalance(ownerWallet.address)).toBigInt();
+        try {
+          const tx = await pensionWallet.transfer({
+              to: firstRichWallet.address,
+              amount: ethers.utils.parseUnits("10", 18),
+              overrides: { type: 113 },
+            });
+          tx.wait();
+          // expect to fail
+          expect(true).to.be.false;
+        } catch (e) {
+          expect(e.message).to.contains("execution reverted: Failed to pay for the transaction: Action locked until expiry time");
+        }
+        const balance = (await provider.getBalance(ownerWallet.address)).toBigInt();
+        const difference = balanceBefore - balance;
+        // expect no difference 
+        expect(difference.toString().substring(0, 2)).to.equal("0");
       });
     });
   });
