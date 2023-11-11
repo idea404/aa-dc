@@ -119,6 +119,35 @@ export class MultiSigWallet extends Wallet {
   }
 }
 
+// Temporary wallet for testing - that is accepting one private key - and signs the transaction with it.
+export class PensionWallet extends Wallet {
+  readonly accountAddress: string;
+  otherWallet: Wallet;
+
+  // accountAddress - is the account abstraction address for which, we'll use the private key to sign transactions.
+  constructor(
+    accountAddress: string,
+    privateKey: string,
+    providerL2: Provider,
+  ) {
+    super(privateKey, providerL2);
+    this.accountAddress = accountAddress;
+  }
+
+  getAddress(): Promise<string> {
+    return Promise.resolve(this.accountAddress);
+  }
+
+  async signTransaction(transaction: types.TransactionRequest) {
+    const sig1 = await this.eip712.sign(transaction);
+    if (transaction.customData === undefined) {
+      throw new Error("Transaction customData is undefined");
+    }
+    transaction.customData.customSignature = sig1;
+    return (0, utils.serialize)(transaction);
+  }
+}
+
 export async function expectThrowsAsync(
   // eslint-disable-next-line @typescript-eslint/ban-types
   method: Function,
