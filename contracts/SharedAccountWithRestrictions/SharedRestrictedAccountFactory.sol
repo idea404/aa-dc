@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import "@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol";
 import "@matterlabs/zksync-contracts/l2/system-contracts/libraries/SystemContractsCaller.sol";
 
-contract SharedAccountWithRestrictionsFactory {
+contract SharedRestrictedAccountFactory {
     bytes32 public aaBytecodeHash;
 
     constructor(bytes32 _aaBytecodeHash) {

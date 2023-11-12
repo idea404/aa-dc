@@ -3,11 +3,19 @@
     "deployed": [
       {
         "name": "PensionAccountFactory",
-        "address": "0x111C3E89Ce80e62EE88318C2804920D4c96f92bb"
+        "address": "0x094499Df5ee555fFc33aF07862e43c90E6FEe501"
       },
       {
         "name": "PensionAccount",
-        "address": "0x58d487F21a6baCDAC552dfce6EE09365bD52dbE1"
+        "address": "0xafA540E68a4e544d604277311190a0AC2CA6B8E6"
+      },
+      {
+        "name": "SharedRestrictedAccountFactory",
+        "address": "0xb76eD02Dea1ba444609602BE5D587c4bFfd67153"
+      },
+      {
+        "name": "SharedRestrictedAccount",
+        "address": "0x542baA36793feE02404c081B26284120af899428"
       }
     ]
   }

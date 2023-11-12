@@ -2,7 +2,6 @@ import { utils, Wallet, Provider, types } from "zksync-web3";
 import * as hre from "hardhat";
 import { ethers } from "ethers";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
-import { expect } from "chai";
 
 export async function deployFactory(wallet: Wallet, accountContractName: string, accountFactoryContractName: string) {
   const deployer = new Deployer(hre, wallet);
@@ -19,6 +18,13 @@ export async function deployFactory(wallet: Wallet, accountContractName: string,
   ]);
 
   return accountFactory;
+}
+
+export async function deployContract(wallet: Wallet, contractName: string, args: any[] = [], additionalFactoryDeps: string[] = []) {
+  const deployer = new Deployer(hre, wallet);
+  const contractArtifact = await deployer.loadArtifact(contractName);
+  const contract = await deployer.deploy(contractArtifact, args, undefined, additionalFactoryDeps);
+  return contract;
 }
 
 export async function deployMultisig(wallet: Wallet, factoryAddress: string, ownerWallet1: Wallet, ownerWallet2: Wallet) {
@@ -75,6 +81,27 @@ export async function deployPension(wallet: Wallet, factoryAddress: string, wall
   return pensionAccountContract;
 }
 
+export async function deploySharedRestricted(wallet: Wallet, factoryAddress: string, ownerWallet: Wallet) {
+  const factoryArtifact = await hre.artifacts.readArtifact("SharedRestrictedAccountFactory");
+  const accountArtifact = await hre.artifacts.readArtifact("SharedRestrictedAccount");
+
+  const sraFactory = new ethers.Contract(factoryAddress, factoryArtifact.abi, wallet);
+
+  // For the simplicity of the tutorial, we will use zero hash as salt
+  const salt = ethers.constants.HashZero;
+
+  // deploy account owned by owner1 & owner2
+  const tx = await sraFactory.deployAccount(salt, ownerWallet.address);
+  await tx.wait();
+
+  // Getting the address of the deployed contract account
+  const abiCoder = new ethers.utils.AbiCoder();
+  let accountAddress = utils.create2Address(factoryAddress, await sraFactory.aaBytecodeHash(), salt, abiCoder.encode(["address"], [ownerWallet.address]));
+
+  const accountContract = new ethers.Contract(accountAddress, accountArtifact.abi, ownerWallet);
+  return accountContract;
+}
+
 export async function fundAccount(wallet: Wallet, destinationAddress: string, amount: string = "100") {
   // Send funds to the account
   await (
@@ -120,7 +147,7 @@ export class MultiSigWallet extends Wallet {
 }
 
 // Temporary wallet for testing - that is accepting one private key - and signs the transaction with it.
-export class PensionWallet extends Wallet {
+export class SingleSignerAAWallet extends Wallet {
   readonly accountAddress: string;
 
   // accountAddress - is the account abstraction address for which, we'll use the private key to sign transactions.
@@ -145,27 +172,6 @@ export class PensionWallet extends Wallet {
     transaction.customData.customSignature = sig1;
     return (0, utils.serialize)(transaction);
   }
-}
-
-export async function expectThrowsAsync(
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  method: Function,
-  errorMessage: string
-): Promise<string> {
-  let error = null;
-  try {
-    await method();
-  } catch (err) {
-    error = err;
-  }
-
-  expect(error).to.be.an("Error");
-  if (errorMessage) {
-    expect((error as unknown as Error).message).to.include(errorMessage);
-    return (error as unknown as Error).message;
-  }
-
-  return "";
 }
 
 function createMockAddress(base: string) {

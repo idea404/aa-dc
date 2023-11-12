@@ -3,11 +3,15 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 import { ethers } from "ethers";
 import * as zks from "zksync-web3";
-import { deployFactory, deployMultisig, fundAccount, MultiSigWallet, deployPension, PensionWallet, advanceBlocks } from "./utils";
+import { deployFactory, deployMultisig, fundAccount, MultiSigWallet, deployPension, SingleSignerAAWallet, advanceBlocks, deploySharedRestricted, deployContract } from "./utils";
 
 const config = {
   firstWalletPrivateKey: "0x7726827caac94a7f9e1b160f7ea819f172f7b6f9d2a97f992c38edeab82d4110",
   firstWalletAddress: "0x36615Cf349d7F6344891B1e7CA7C72883F5dc049",
+  secondWalletPrivateKey: "0xac1e735be8536c6534bb4f17f06f6afc73b2b5ba84ac2cfb12f7461b20c0bbe3",
+  secondWalletAddress: "0xa61464658AfeAf65CccaaFD3a512b69A83B77618",
+  thirdWalletPrivateKey: "0xd293c684d884d56f8d6abd64fc76757d3664904e309a0645baf8522ab6366d9e",
+  thirdWalletAddress: "0x0D43eB5B8a47bA8900d84AA36656c92024e9772e",
 };
 
 describe("Account Abstraction Tests", function () {
@@ -145,7 +149,7 @@ describe("Account Abstraction Tests", function () {
       });
 
       it("Should not be able to withdraw before the lockup period", async function () {
-        const pensionWallet = new PensionWallet(
+        const pensionWallet = new SingleSignerAAWallet(
           pensionAccountContract.address, 
           ownerWallet.privateKey, 
           provider
@@ -173,7 +177,7 @@ describe("Account Abstraction Tests", function () {
         // Advance the blockchain by 10 blocks
         await advanceBlocks(10);
     
-        const pensionWallet = new PensionWallet(
+        const pensionWallet = new SingleSignerAAWallet(
           pensionAccountContract.address, 
           ownerWallet.privateKey, 
           provider
@@ -193,6 +197,145 @@ describe("Account Abstraction Tests", function () {
         // Assert that the balance has increased by approximately 10 ETH
         expect(difference / BigInt(10 ** 18) > 9.9).to.be.true;
         expect(difference / BigInt(10 ** 18) < 10.1).to.be.true;
+      });
+    });
+  });
+
+  describe("Shared Restricted Account Abstraction Tests", function () {
+    const accountContractName = "SharedRestrictedAccount";
+    const factoryContractName = "SharedRestrictedAccountFactory";
+    let factoryContract: ethers.Contract;
+    describe("Shared Restricted Account Factory", function () {
+      before(async function () {
+        factoryContract = await deployFactory(firstRichWallet, accountContractName, factoryContractName);
+      });
+
+      it("Should have a tx hash that starts from 0x", async function () {
+        result = factoryContract.deployTransaction.hash;
+        expect(result).to.contains("0x");
+      });
+    });
+
+    describe("Shared Restricted Account", function () {
+      const firstOwnerWallet = new zks.Wallet(config.secondWalletPrivateKey, provider);
+      const secondOwnerWallet = new zks.Wallet(config.thirdWalletPrivateKey, provider);
+      let sharedRestrictedAccountContract: ethers.Contract;
+      let testContract1: ethers.Contract;
+      let testContract2: ethers.Contract;
+      let testContract3: ethers.Contract;
+      before(async function () {
+        sharedRestrictedAccountContract = await deploySharedRestricted(firstRichWallet, factoryContract.address, firstRichWallet);
+        await fundAccount(firstRichWallet, sharedRestrictedAccountContract.address);
+        testContract1 = await deployContract(firstRichWallet, "TestContract");
+        testContract2 = await deployContract(firstRichWallet, "TestContract");
+        testContract3 = await deployContract(firstRichWallet, "TestContract");
+      });
+
+      it("Should have a tx hash that starts from 0x", async function () {
+        result = factoryContract.deployTransaction.hash;
+        expect(result).to.contains("0x");
+      });
+
+      it("Should have to owners initially", async function () {
+        const owners = await sharedRestrictedAccountContract.getOwners();
+        expect(owners.length).to.equal(0);
+      });
+
+      it("Should be able to add owners", async function () {
+        const tx = await sharedRestrictedAccountContract.addOwner(firstOwnerWallet.address);
+        await tx.wait();
+        const owners = await sharedRestrictedAccountContract.getOwners();
+        expect(owners.length).to.equal(1);
+        expect(owners[0]).to.equal(firstOwnerWallet.address);
+        const tx2 = await sharedRestrictedAccountContract.addOwner(secondOwnerWallet.address);
+        await tx2.wait();
+        const owners2 = await sharedRestrictedAccountContract.getOwners();
+        expect(owners2.length).to.equal(2);
+        expect(owners2[0]).to.equal(firstOwnerWallet.address);
+        expect(owners2[1]).to.equal(secondOwnerWallet.address);
+      });
+
+      it("Should have no allowed call addresses initially", async function () {
+        const allowedCallAddresses = await sharedRestrictedAccountContract.getAllowedCallAddresses();
+        expect(allowedCallAddresses.length).to.equal(0);
+      });
+
+      it("Should be able to add allowed call addresses", async function () {
+        const tx = await sharedRestrictedAccountContract.addAllowedCallAddress(testContract1.address, [
+          testContract1.interface.getSighash('testFunction1')
+        ]);
+        await tx.wait();
+        const allowedCallAddresses = await sharedRestrictedAccountContract.getAllowedCallAddresses();
+        expect(allowedCallAddresses.length).to.equal(1);
+        expect(allowedCallAddresses[0]).to.equal(testContract1.address);
+        const tx2 = await sharedRestrictedAccountContract.addAllowedCallAddress(testContract2.address, [
+          testContract2.interface.getSighash('testFunction2')
+        ]);
+        await tx2.wait();
+        const allowedCallAddresses2 = await sharedRestrictedAccountContract.getAllowedCallAddresses();
+        expect(allowedCallAddresses2.length).to.equal(2);
+        expect(allowedCallAddresses2[0]).to.equal(testContract1.address);
+        expect(allowedCallAddresses2[1]).to.equal(testContract2.address);
+      });
+
+      it("Should not be able to use account with some random wallet", async function () {
+        const randomWallet = zks.Wallet.createRandom();
+        const accountWallet = new SingleSignerAAWallet(
+          sharedRestrictedAccountContract.address, 
+          randomWallet.privateKey, 
+          provider
+        );
+        try {
+          accountWallet.transfer({
+            to: firstRichWallet.address,
+            amount: ethers.utils.parseUnits("1", 18),
+            overrides: { type: 113 },
+          });
+        } catch (e) {
+          expect(e.message).to.contains("execution reverted: Account validation error");
+        }
+      });
+
+      it("Should be able to use account with owner wallet and allowed contract method", async function () {
+        const accountWallet = new SingleSignerAAWallet(
+          sharedRestrictedAccountContract.address, 
+          firstOwnerWallet.privateKey, 
+          provider
+        );
+        const testContract1accountWallet = testContract1.connect(accountWallet);
+        const result = await testContract1accountWallet.testFunction1(firstOwnerWallet.address);
+        expect(result).to.equal(firstOwnerWallet.address);
+        const testContract2accountWallet = testContract2.connect(accountWallet);
+        const result2 = await testContract2accountWallet.testFunction2();
+        expect(result2).to.equal(true);
+      });
+
+      it("Should not be able to use account with owner wallet and not allowed call address", async function () {
+        const accountWallet = new SingleSignerAAWallet(
+          sharedRestrictedAccountContract.address, 
+          firstOwnerWallet.privateKey, 
+          provider
+        );
+        const testContract3accountWallet = testContract3.connect(accountWallet);
+        try {
+          testContract3accountWallet.testFunction1(firstOwnerWallet.address);
+        } catch (e) {
+          expect(e.message).to.contains("execution reverted: Account validation error");
+        }
+      });
+
+      it("Should not be able to use account with owner wallet and allowed call address but not allowed method", async function () {
+        const accountWallet = new SingleSignerAAWallet(
+          sharedRestrictedAccountContract.address, 
+          firstOwnerWallet.privateKey, 
+          provider
+        );
+        const testContract1accountWallet = testContract1.connect(accountWallet);
+        try {
+          testContract1accountWallet.testFunction3();
+        } catch (e) {
+          expect(e.message).to.contains("execution reverted: Account validation error");
+        }
       });
     });
   });

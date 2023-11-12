@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 bytes4 constant EIP1271_SUCCESS_RETURN_VALUE = 0x1626ba7e;
 
-contract SharedAccountWithRestrictions is IAccount, IERC1271, IERC721Receiver {
+contract SharedRestrictedAccount is IAccount, IERC1271, IERC721Receiver {
     using TransactionHelper for Transaction;
 
     address private admin;

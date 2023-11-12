@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "test": "hardhat test --network hardhat",
-    "deploy:shared-account-with-restrictions": "hardhat deploy-zksync --script deploy-shared-account-with-restrictions.ts --network zkSyncLocalnet",
+    "deploy:shared-restricted": "hardhat deploy-zksync --script deploy-shared-restricted.ts --network zkSyncLocalnet",
     "deploy:aafactory": "hardhat deploy-zksync --script deploy-aafactory.ts --network zkSyncLocalnet",
     "deploy:multisig": "hardhat deploy-zksync --script deploy-multisig.ts --network zkSyncLocalnet",
     "deploy:pafactory": "hardhat deploy-zksync --script deploy-pafactory.ts --network zkSyncLocalnet",
@@ -13,6 +13,8 @@
     "demo:pension-setup": "yarn deploy:pafactory && yarn deploy:pension && yarn demo:pension-fund",
       "demo:pension-fund": "ts-node demo/pension-fund-eth.ts",
     "demo:pension-withdraw": "ts-node demo/pension-send-eth.ts",
+    "demo:shared-restricted-setup": "yarn deploy:shared-restricted && yarn demo:shared-restricted-fund",
+      "demo:shared-restricted-fund": "ts-node demo/shared-restricted-fund.ts",
     "demo:fast-forward": "ts-node demo/fast-forward.ts"
   },
   "devDependencies": {
