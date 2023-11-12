@@ -3,7 +3,7 @@ import { expect } from "chai";
 import * as hre from "hardhat";
 import { ethers } from "ethers";
 import * as zks from "zksync-web3";
-import { deployFactory, deployMultisig, fundAccount, MultiSigWallet, deployPension, PensionWallet } from "./utils";
+import { deployFactory, deployMultisig, fundAccount, MultiSigWallet, deployPension, PensionWallet, advanceBlocks } from "./utils";
 
 const config = {
   firstWalletPrivateKey: "0x7726827caac94a7f9e1b160f7ea819f172f7b6f9d2a97f992c38edeab82d4110",
@@ -161,12 +161,38 @@ describe("Account Abstraction Tests", function () {
           // expect to fail
           expect(true).to.be.false;
         } catch (e) {
-          expect(e.message).to.contains("execution reverted: Failed to pay for the transaction: Action locked until expiry block");
+          expect(e.message).to.contains("execution reverted: Failed to pay for the transaction: Current block: 17, Expiry block: 21. Action locked until expiry block.");
         }
         const balance = (await provider.getBalance(ownerWallet.address)).toBigInt();
         const difference = balanceBefore - balance;
         // expect no difference 
         expect(difference.toString().substring(0, 2)).to.equal("0");
+      });
+
+      it("Should be able to withdraw after the lockup period", async function () {
+        // Advance the blockchain by 10 blocks
+        await advanceBlocks(10);
+    
+        const pensionWallet = new PensionWallet(
+          pensionAccountContract.address, 
+          ownerWallet.privateKey, 
+          provider
+        );
+
+        const balanceBefore = (await provider.getBalance(firstRichWallet.address)).toBigInt();
+        const tx = await pensionWallet.transfer({
+          to: firstRichWallet.address,
+          amount: ethers.utils.parseUnits("10", 18),
+          overrides: { type: 113 },
+        });
+        await tx.wait();
+    
+        const balanceAfter = (await provider.getBalance(firstRichWallet.address)).toBigInt();
+        const difference = balanceAfter - balanceBefore;
+    
+        // Assert that the balance has increased by approximately 10 ETH
+        expect(difference / BigInt(10 ** 18) > 9.9).to.be.true;
+        expect(difference / BigInt(10 ** 18) < 10.1).to.be.true;
       });
     });
   });

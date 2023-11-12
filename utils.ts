@@ -16,6 +16,7 @@ export async function deployAccountAbstraction(deployer: Deployer, factoryContra
   const aaArtifact = await deployer.loadArtifact(accountContractName);
   const bytecodeHash = utils.hashBytecode(aaArtifact.bytecode);
   const aaFactoryContract = await deployContract(deployer, factoryContractName, [bytecodeHash], [aaArtifact.bytecode]);
+  logBlue(`${aaFactoryContract.contractName} was deployed to ${aaFactoryContract.address}`);
   const salt = ethers.utils.hexlify(ethers.utils.randomBytes(32));
   // using deployer address as account admin
   let tx = await aaFactoryContract.deployAccount(salt, deployer.zkWallet.address);
