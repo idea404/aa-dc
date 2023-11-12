@@ -175,7 +175,7 @@ function createMockAddress(base: string) {
 }
 
 // Helper function to advance the blockchain by a specified number of blocks
-export async function advanceBlocks(numberOfBlocks) {
+export async function advanceBlocks(numberOfBlocks: number) {
   for (let i = 0; i < numberOfBlocks; i++) {
     await hre.network.provider.request({
       method: "evm_mine",

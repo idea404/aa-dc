@@ -12,7 +12,8 @@
     "deploy:pension": "hardhat deploy-zksync --script deploy-pension.ts --network zkSyncLocalnet",
     "demo:pension-setup": "yarn deploy:pafactory && yarn deploy:pension && yarn demo:pension-fund",
       "demo:pension-fund": "ts-node demo/pension-fund-eth.ts",
-    "demo:pension-withdraw": "ts-node demo/pension-send-eth.ts"
+    "demo:pension-withdraw": "ts-node demo/pension-send-eth.ts",
+    "demo:fast-forward": "ts-node demo/fast-forward.ts"
   },
   "devDependencies": {
     "@types/chai": "^4.3.10",
