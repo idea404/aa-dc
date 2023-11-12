@@ -2,7 +2,22 @@
 
 This repo contains examples for account abstraction on zkSync. 
 
-### SharedAccountWithRestrictions
+## Examples
 
-The idea is that I as an admin need to create some accounts that have some limitations in terms of what the owners of these accounts should be able to do with them. `SharedAccountWithRestrictions` allows admin to create such account and specify which contracts and which methods of these contracts the owners of the account will be able to call. Admin can add/remove restrictions whenever it is needed.
-Additionally `SharedAccountWithRestrictions` allows admin to set more than 1 owner per account. This allows many people to use a single account simultaneously. Let's say I need to provide an account for testing with limited functionality to my entire team, there is no need to create a separate account for everyone and keep each of them funded. `SharedAccountWithRestrictions` allows me to create one account and just set multiple owners. Admin can add/remove owners whenever it is needed.
+### MultiSig Account
+
+This example shows how to create a multi-signature account on zkSync. The account is controlled by 2 keys, and requires both signatures to perform a transaction.
+
+- [MultiSig Account](./contracts/MultiSig/TwoUserMultisig.sol)
+
+### Pension Account 
+
+This example shows how to create a pension account on zkSync. The account is controlled by one key. The account also has a block-lock, which prevents any transactions from being performed until a certain block has passed.
+
+- [Pension Account](./contracts/PensionAccount/PensionAccount.sol)
+
+### Shared Account with Restrictions
+
+This example shows how to create a shared account on zkSync. The account is controlled by any arbitrary number of keys - added or removed by an admin, and requires any of those signatures to perform a transaction. The account also has a permissioned set of contracts and contract methods it can call.
+
+- [Shared Account](./contracts/SharedRestrictedAccount/SharedRestrictedAccount.sol)
