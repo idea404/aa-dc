@@ -236,7 +236,7 @@ describe("Account Abstraction Tests", function () {
         expect(result).to.contains("0x");
       });
 
-      it("Should have to owners initially", async function () {
+      it("Should have no owners initially", async function () {
         const owners = await sharedRestrictedAccountContract.getOwners();
         expect(owners.length).to.equal(0);
       });
