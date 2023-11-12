@@ -1,4 +1,4 @@
-import { utils, Wallet, Provider, types, EIP712Signer } from "zksync-web3";
+import { utils, Wallet, Provider, types } from "zksync-web3";
 import * as hre from "hardhat";
 import { ethers } from "ethers";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
@@ -122,7 +122,6 @@ export class MultiSigWallet extends Wallet {
 // Temporary wallet for testing - that is accepting one private key - and signs the transaction with it.
 export class PensionWallet extends Wallet {
   readonly accountAddress: string;
-  otherWallet: Wallet;
 
   // accountAddress - is the account abstraction address for which, we'll use the private key to sign transactions.
   constructor(
@@ -173,4 +172,14 @@ function createMockAddress(base: string) {
   const baseHex = base.replace(/[^0-9A-Fa-f]/g, ''); // Remove non-hex characters
   const paddingLength = 40 - baseHex.length; // Calculate padding length
   return '0x' + baseHex + '0'.repeat(paddingLength);
+}
+
+// Helper function to advance the blockchain by a specified number of blocks
+export async function advanceBlocks(numberOfBlocks) {
+  for (let i = 0; i < numberOfBlocks; i++) {
+    await hre.network.provider.request({
+      method: "evm_mine",
+      params: [],
+    });
+  }
 }

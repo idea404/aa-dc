@@ -10,8 +10,9 @@
     "deploy:multisig": "hardhat deploy-zksync --script deploy-multisig.ts --network zkSyncLocalnet",
     "deploy:pafactory": "hardhat deploy-zksync --script deploy-pafactory.ts --network zkSyncLocalnet",
     "deploy:pension": "hardhat deploy-zksync --script deploy-pension.ts --network zkSyncLocalnet",
-    "demo:fund-pension": "ts-node demo/pension-fund-eth.ts",
-    "demo:withdraw-pension": "ts-node demo/pension-send-eth.ts"
+    "demo:pension-setup": "yarn deploy:pafactory && yarn deploy:pension && yarn demo:pension-fund",
+      "demo:pension-fund": "ts-node demo/pension-fund-eth.ts",
+    "demo:pension-withdraw": "ts-node demo/pension-send-eth.ts"
   },
   "devDependencies": {
     "@types/chai": "^4.3.10",

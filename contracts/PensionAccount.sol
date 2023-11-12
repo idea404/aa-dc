@@ -22,8 +22,8 @@ contract PensionAccount is IAccount {
     address public SHIB;
     address public BTC;
 
-    // Expiry timestamp
-    uint256 public expiryTimestamp;
+    // Expiry block number
+    uint256 public expiryBlockNumber;
 
     // State variables to track investments
     uint256 public totalEthReceived;
@@ -40,13 +40,37 @@ contract PensionAccount is IAccount {
         SHIB = _shib;
         BTC = _btc;
 
-        // Set the expiry timestamp to 3 minutes from now
-        expiryTimestamp = block.timestamp + 3 minutes;
+        // Set the expiry to 10 blocks from the current block
+        expiryBlockNumber = block.number + 10;
     }
 
-    // Modifier to check if the time lock has expired
+    // Helper function to convert uint256 to string
+    function uintToString(uint256 _i) internal pure returns (string memory) {
+        if (_i == 0) {
+            return "0";
+        }
+        uint256 j = _i;
+        uint256 length;
+        while (j != 0) {
+            length++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(length);
+        uint256 k = length;
+        j = _i;
+        while (j != 0) {
+            bstr[--k] = bytes1(uint8(48 + j % 10));
+            j /= 10;
+        }
+        return string(bstr);
+    }
+
+    // Modifier to check if the block lock has expired
     modifier afterExpiry() {
-        require(block.timestamp >= expiryTimestamp, "Action locked until expiry time");
+        require(block.number >= expiryBlockNumber, 
+            string(abi.encodePacked("Current block: ", uintToString(block.number), 
+                                    ", Expiry block: ", uintToString(expiryBlockNumber),
+                                    ". Action locked until expiry block.")));
         _;
     }
 

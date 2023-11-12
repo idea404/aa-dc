@@ -3,11 +3,11 @@
     "deployed": [
       {
         "name": "PensionAccountFactory",
-        "address": "0x4B5DF730c2e6b28E17013A1485E5d9BC41Efe021"
+        "address": "0x111C3E89Ce80e62EE88318C2804920D4c96f92bb"
       },
       {
         "name": "PensionAccount",
-        "address": "0x7A4C681d869bfF421d752B696cd8eC6eD6c7EfBa"
+        "address": "0x58d487F21a6baCDAC552dfce6EE09365bD52dbE1"
       }
     ]
   }

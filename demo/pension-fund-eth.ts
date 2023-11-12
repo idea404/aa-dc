@@ -3,10 +3,7 @@
 
 import { ethers } from "ethers";
 import { Provider, Wallet } from "zksync-web3";
-import dotenv from "dotenv";
 import { getDeployedContractDetailsFromVars, config } from "../deploy/utils";
-
-dotenv.config();
 
 const NETWORK = "zkSyncLocalnet";
 const RPC_URL = config.L2RpcUrl;

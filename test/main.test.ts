@@ -161,7 +161,7 @@ describe("Account Abstraction Tests", function () {
           // expect to fail
           expect(true).to.be.false;
         } catch (e) {
-          expect(e.message).to.contains("execution reverted: Failed to pay for the transaction: Action locked until expiry time");
+          expect(e.message).to.contains("execution reverted: Failed to pay for the transaction: Action locked until expiry block");
         }
         const balance = (await provider.getBalance(ownerWallet.address)).toBigInt();
         const difference = balanceBefore - balance;
