@@ -3,3 +3,4 @@ artifacts-zk/
 cache-zk/
 .env
 era_test_node.log
+.vscode
