@@ -108,12 +108,11 @@ contract TwoUserMultisig is IAccount, IERC1271 {
         }
     }
 
-    function executeTransactionFromOutside(Transaction calldata _transaction)
+    function executeTransactionFromOutside(Transaction calldata)
         external
         payable
     {
-        _validateTransaction(bytes32(0), _transaction);
-        _executeTransaction(_transaction);
+        revert("executeTransactionFromOutside is not implemented");
     }
 
     function isValidSignature(bytes32 _hash, bytes memory _signature)
