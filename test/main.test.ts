@@ -79,7 +79,7 @@ describe("Account Abstraction Tests", function () {
         ).wait();
         const balance = (await provider.getBalance(firstRichWallet.address)).toBigInt();
         const difference = balance - balanceBefore;
-        // expect to be slightly higher than 5
+        // expect to be about 10
         expect(difference / BigInt(10 ** 18) > 9.9).to.be.true;
         expect(difference / BigInt(10 ** 18) < 10.1).to.be.true;
       });
